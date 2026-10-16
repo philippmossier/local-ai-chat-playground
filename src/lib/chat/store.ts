@@ -29,7 +29,7 @@ export type ChatAction =
   | { type: "select"; id: string }
   | { type: "delete"; id: string }
   | { type: "clear" }
-  /** Another tab saved its chats. `keepChatId` is a chat this tab is still writing an answer into. */
+  /** Another tab saved its chats, which replace ours. `keepChatId` is a chat this tab is still writing an answer into: our copy of it is kept. */
   | { type: "sync"; incoming: ChatState; keepChatId: string | null }
   | {
       type: "send";
@@ -98,11 +98,23 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case "clear":
       return initialState;
     case "sync": {
-      // Merge by id: the other tab's chats are added, ours win on conflicts, so nothing in progress is lost.
-      const byId = new Map(action.incoming.chats.map((c) => [c.id, c]));
-      for (const c of state.chats) byId.set(c.id, c);
+      // The other tab's save is the truth, except for the chat this tab is still writing into.
+      // A local chat newer than anything in that save was made here after it, so the other tab
+      // has not seen it yet rather than deleted it.
+      const incoming = action.incoming.chats;
+      const savedUpTo = incoming.length
+        ? Math.max(...incoming.map((c) => c.updatedAt))
+        : Number.POSITIVE_INFINITY;
+      const byId = new Map(incoming.map((c) => [c.id, c]));
+      for (const c of state.chats) {
+        if (c.id === action.keepChatId || (!byId.has(c.id) && c.updatedAt > savedUpTo)) {
+          byId.set(c.id, c);
+        }
+      }
       const chats = [...byId.values()].sort((a, b) => b.updatedAt - a.updatedAt);
-      return { chats, activeId: state.activeId ?? chats[0]?.id ?? null };
+      const activeId =
+        state.activeId && byId.has(state.activeId) ? state.activeId : (chats[0]?.id ?? null);
+      return { chats, activeId };
     }
     case "send":
       return mapChat(state, action.chatId, (c) => ({

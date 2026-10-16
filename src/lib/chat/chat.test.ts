@@ -178,4 +178,61 @@ describe("sync from another tab", () => {
     );
     expect(next.chats).toHaveLength(2);
   });
+
+  it("removes a chat the other tab deleted", () => {
+    const local: ChatState = { chats: [chat("a"), chat("x")], activeId: "a" };
+    const incoming: ChatState = { chats: [chat("a")], activeId: "a" };
+    const next = chatReducer(local, { type: "sync", incoming, keepChatId: null });
+    expect(next.chats.map((c) => c.id)).toEqual(["a"]);
+    expect(next.activeId).toBe("a");
+  });
+
+  it("takes the other tab's newer version of a chat both tabs have", () => {
+    const local: ChatState = { chats: [chat("a", "old")], activeId: "a" };
+    const incoming: ChatState = {
+      chats: [
+        {
+          ...chat("a", "old"),
+          updatedAt: 5,
+          messages: [
+            { id: "a-m", role: "user", content: "old" },
+            { id: "a-m2", role: "assistant", content: "new reply" },
+          ],
+        },
+      ],
+      activeId: "a",
+    };
+    const next = chatReducer(local, { type: "sync", incoming, keepChatId: null });
+    expect(next.chats).toHaveLength(1);
+    expect(next.chats[0]!.messages.map((m) => m.content)).toEqual(["old", "new reply"]);
+  });
+
+  it("falls back to the first remaining chat when the active one was deleted elsewhere", () => {
+    const local: ChatState = { chats: [chat("a"), chat("b")], activeId: "a" };
+    const incoming: ChatState = { chats: [chat("b")], activeId: "b" };
+    const next = chatReducer(local, { type: "sync", incoming, keepChatId: null });
+    expect(next.chats.map((c) => c.id)).toEqual(["b"]);
+    expect(next.activeId).toBe("b");
+  });
+
+  it("ends with no active chat when the other tab deleted them all", () => {
+    const local: ChatState = { chats: [chat("a")], activeId: "a" };
+    const incoming: ChatState = { chats: [], activeId: null };
+    const next = chatReducer(local, { type: "sync", incoming, keepChatId: null });
+    expect(next).toEqual({ chats: [], activeId: null });
+  });
+
+  it("keeps the streaming chat even if the other tab doesn't have it", () => {
+    const local: ChatState = {
+      chats: [chat("a", "streaming..."), chat("x")],
+      activeId: "a",
+    };
+    const incoming: ChatState = { chats: [chat("b")], activeId: "b" };
+    const next = chatReducer(local, { type: "sync", incoming, keepChatId: "a" });
+    expect(next.chats.map((c) => c.id).sort()).toEqual(["a", "b"]);
+    expect(next.chats.find((c) => c.id === "a")!.messages[0]!.content).toBe(
+      "streaming...",
+    );
+    expect(next.activeId).toBe("a");
+  });
 });
