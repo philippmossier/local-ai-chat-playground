@@ -26,7 +26,7 @@ export function adviseFromSpeed(
   if (tokens < MIN_TOKENS_FOR_ADVICE) return { kind: "ok" };
 
   if (tokensPerSecond < TOO_SLOW_TPS) {
-    const lighter = neighbour(current, 1);
+    const lighter = neighbour(current, -1);
     if (lighter) return { kind: "too-slow", suggest: lighter };
     return { kind: "ok" };
   }

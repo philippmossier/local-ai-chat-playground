@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getModel, REFERENCE_BANDWIDTH_GBS } from "../models/catalog";
+import {
+  CATALOG,
+  getModel,
+  REFERENCE_BANDWIDTH_GBS,
+  TIER_ORDER,
+} from "../models/catalog";
 import { adviseFromSpeed } from "./advice";
 import { classify } from "./classify";
 import { estimateTokensPerSecond } from "./estimate";
@@ -138,6 +143,46 @@ describe("adviseFromSpeed", () => {
   });
   it("stays quiet in the comfortable middle", () => {
     expect(adviseFromSpeed(15, 80, e2b, options)).toEqual({ kind: "ok" });
+  });
+
+  describe("when the first answer is too slow", () => {
+    it("suggests a lighter model than Gemma 4 E2B, not E4B", () => {
+      const advice = adviseFromSpeed(3, 80, e2b, options);
+      expect(advice.kind).toBe("too-slow");
+      const suggested = advice.kind === "too-slow" ? advice.suggest.id : undefined;
+      expect(suggested).not.toBe("gemma4-e4b");
+      expect(["qwen3-0.6b", "qwen3-1.7b"]).toContain(suggested);
+    });
+    it("suggests Gemma 4 E2B from Gemma 4 E4B", () => {
+      expect(adviseFromSpeed(3, 80, getModel("gemma4-e4b")!, options)).toEqual({
+        kind: "too-slow",
+        suggest: getModel("gemma4-e2b"),
+      });
+    });
+    it("suggests Qwen3 0.6B from Qwen3 1.7B", () => {
+      expect(adviseFromSpeed(3, 80, getModel("qwen3-1.7b")!, options)).toEqual({
+        kind: "too-slow",
+        suggest: getModel("qwen3-0.6b"),
+      });
+    });
+    it("stays quiet on the lightest model", () => {
+      expect(adviseFromSpeed(3, 80, getModel("qwen3-0.6b")!, options)).toEqual({
+        kind: "ok",
+      });
+    });
+    it.each(CATALOG.map((m) => [m.id, m] as const))(
+      "never suggests a heavier tier than %s",
+      (_id, model) => {
+        const advice = adviseFromSpeed(3, 80, model, options);
+        if (advice.kind === "too-slow") {
+          expect(TIER_ORDER.indexOf(advice.suggest.tier)).toBeLessThan(
+            TIER_ORDER.indexOf(model.tier),
+          );
+        } else {
+          expect(advice.kind).toBe("ok");
+        }
+      },
+    );
   });
 });
 
