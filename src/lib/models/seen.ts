@@ -6,7 +6,8 @@ export const SEEN_MODELS_KEY = "local-ai-chat:seen-models";
  * catalog is simply remembered.
  */
 export function unseenModels(seen: string[] | null, catalogIds: string[]): string[] {
-  return catalogIds.filter((id) => !(seen ?? []).includes(id));
+  if (seen === null) return [];
+  return catalogIds.filter((id) => !seen.includes(id));
 }
 
 export function readSeenModels(): string[] | null {

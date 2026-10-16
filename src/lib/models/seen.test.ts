@@ -6,4 +6,12 @@ describe("unseenModels", () => {
     expect(unseenModels(["a"], ["a", "b", "c"])).toEqual(["b", "c"]);
     expect(unseenModels(["a", "b"], ["a", "b"])).toEqual([]);
   });
+
+  it("announces nothing on a first visit, when no list was ever stored", () => {
+    expect(unseenModels(null, ["a", "b"])).toEqual([]);
+  });
+
+  it("treats a stored empty list as a real list, reporting every model as unseen", () => {
+    expect(unseenModels([], ["a", "b"])).toEqual(["a", "b"]);
+  });
 });
