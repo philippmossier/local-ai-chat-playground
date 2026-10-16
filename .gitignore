@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+.env.*
+*.log
+.DS_Store
+public/ort
+
+# Playwright
+test-results/
+playwright-report/
+
+# Cloudflare (local state of wrangler dev and deploy)
+.wrangler/
