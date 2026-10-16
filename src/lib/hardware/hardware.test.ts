@@ -98,6 +98,16 @@ describe("recommend", () => {
     expect(r.options.find((o) => o.model.id === "qwen3-0.6b")?.lowStorage).toBe(false);
   });
 
+  it("does not warn about storage for a model that is already cached", () => {
+    const tight = { ...PROFILES.appleSiliconMac, storageFreeMB: 2000 };
+    const r = recommend(tight, new Set(["gemma4-e2b"]));
+    expect(r.recommended?.model.id).toBe("gemma4-e2b");
+    expect(r.recommended?.downloadMB).toBe(0);
+    expect(r.recommended?.lowStorage).toBe(false);
+    // an uncached model that does not fit still gets the warning
+    expect(r.options.find((o) => o.model.id === "gemma4-e4b")?.lowStorage).toBe(true);
+  });
+
   it("reports the download that matches the weight format that will be used", () => {
     const apple = recommend(PROFILES.appleSiliconMac).recommended!;
     expect(apple.backend).toEqual({ device: "webgpu", dtype: "q4f16" });
@@ -191,6 +201,7 @@ describe("recommend with a measured GPU speed", () => {
     const withCached = recommend(tight, new Set(["gemma4-e2b"]));
     expect(withCached.recommended?.model.id).toBe("gemma4-e2b");
     expect(withCached.recommended?.downloadMB).toBe(0);
+    expect(withCached.recommended?.lowStorage).toBe(false);
   });
 
   it("ignores the speed test on the CPU path", () => {

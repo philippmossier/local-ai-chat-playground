@@ -86,7 +86,7 @@ export function recommend(
       fit,
       backend,
       downloadMB,
-      lowStorage: isLowStorage(p, model.downloadMB[backend.dtype]),
+      lowStorage: isLowStorage(p, downloadMB),
     };
   });
 
@@ -126,7 +126,7 @@ function recommendFromMeasurement(
       backend,
       downloadMB,
       estimatedTps,
-      lowStorage: isLowStorage(p, model.downloadMB[backend.dtype]),
+      lowStorage: isLowStorage(p, downloadMB),
     };
   });
 
