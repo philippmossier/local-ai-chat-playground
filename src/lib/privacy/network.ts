@@ -15,7 +15,7 @@ export interface NetworkSummary {
   requestsAfterFirstMessage: number | null;
 }
 
-const MODEL_HOSTS = [/(^|\.)huggingface\.co$/, /hf\.co$/];
+const MODEL_HOSTS = [/(^|\.)huggingface\.co$/, /(^|\.)hf\.co$/];
 
 export function classifyHost(host: string, ownHost: string): HostKind {
   if (host === ownHost) return "app";

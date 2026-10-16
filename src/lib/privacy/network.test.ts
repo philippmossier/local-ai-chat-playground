@@ -22,6 +22,12 @@ describe("classifyHost", () => {
     ["cdn-lfs.huggingface.co", "chat.example.com", "model"],
     ["cas-bridge.xethub.hf.co", "chat.example.com", "model"],
     ["evilhuggingface.co", "chat.example.com", "other"],
+    ["evilhf.co", "chat.example.com", "other"],
+    ["notthehf.co", "chat.example.com", "other"],
+    ["cdn.evilhf.co", "chat.example.com", "other"],
+    ["hf.co.evil.com", "chat.example.com", "other"],
+    ["cdn-lfs.hf.co", "chat.example.com", "model"],
+    ["hf.co", "chat.example.com", "model"],
     ["cdn.jsdelivr.net", "chat.example.com", "other"],
   ] as const)("%s -> %s", (host, own, expected) => {
     expect(classifyHost(host, own)).toBe(expected);
