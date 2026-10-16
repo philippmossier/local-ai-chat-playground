@@ -31,6 +31,8 @@ describe("classify", () => {
     expect(classify(PROFILES.firefoxNoWebgpu).reasons).toContain("hw.noWebgpu");
     expect(classify(PROFILES.softwareRenderer).reasons).toContain("hw.softwareGpu");
     expect(classify(PROFILES.iphone).reasons).toContain("hw.mobile");
+    expect(classify(PROFILES.lowMemoryChromebook).reasons).toContain("hw.lowMemory");
+    expect(classify(PROFILES.lowMemoryChromebook).reasons).not.toContain("hw.mobile");
   });
 
   it("treats a missing WebAssembly or Worker as unsupported", () => {

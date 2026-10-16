@@ -51,6 +51,10 @@ export function reasonText(id: ReasonId, gbs: number): string {
         "Diese Seite muss über eine sichere Verbindung (https) geöffnet werden, damit das Modell auf Ihrem Gerät gespeichert werden kann.",
       );
     case "hw.lowMemory":
+      return tr(
+        "Your device reports 4 GB of memory or less, so only the smallest model is offered.",
+        "Ihr Gerät meldet höchstens 4 GB Arbeitsspeicher, daher wird nur das kleinste Modell angeboten.",
+      );
     case "hw.mobile":
       return tr(
         "On phones and tablets only the smallest model is offered, to save battery and data.",
