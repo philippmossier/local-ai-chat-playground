@@ -2,12 +2,17 @@ import { lang } from "../lang";
 
 const DAY = 24 * 60 * 60_000;
 
+function startOfDay(t: number): number {
+  const d = new Date(t);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
 /**
  * "Today 8:13 PM", "Yesterday 6:45 PM", "Friday 12:33 PM" (within the last week), "Sat, Sep 19 at 1:21 AM" (older),
  * in the browser's language and clock style, from the platform's own date formatting (no strings to maintain).
  */
 export function messageTime(at: number, now: number, locale: string = lang): string {
-  const days = Math.floor((now - at) / DAY);
+  const days = Math.floor((startOfDay(now) - startOfDay(at)) / DAY);
   const when = new Date(at);
   const time = when.toLocaleTimeString(locale, {
     hour: locale === "de" ? "2-digit" : "numeric",

@@ -27,4 +27,31 @@ describe("messageTime", () => {
     expect(messageTime(at(9, 2, 12, 33), NOW, "de")).toBe("Freitag 12:33");
     expect(messageTime(at(8, 19, 1, 21), NOW, "de")).toMatch(/ um 01:21$/);
   });
+
+  describe("counts calendar days near midnight", () => {
+    it("23:50 viewed at 00:10 the next day is yesterday", () => {
+      expect(messageTime(at(9, 4, 23, 50), at(9, 5, 0, 10), "en")).toMatch(
+        /^Yesterday 11:50\sPM$/,
+      );
+    });
+
+    it("22:00 two days ago viewed at 08:00 shows the weekday", () => {
+      // Saturday 3 Oct 2026, viewed Monday 5 Oct 2026
+      expect(messageTime(at(9, 3, 22, 0), at(9, 5, 8, 0), "en")).toMatch(/^Saturday 10:00\sPM$/);
+    });
+
+    it("00:05 viewed at 23:55 the same day is still today", () => {
+      expect(messageTime(at(9, 5, 0, 5), at(9, 5, 23, 55), "en")).toMatch(/^Today 12:05\sAM$/);
+    });
+
+    it("6 calendar days back shows the weekday, 7 shows the date", () => {
+      const now = at(9, 12, 8, 0); // Monday 12 Oct 2026, 8:00 AM
+      expect(messageTime(at(9, 6, 22, 0), now, "en")).toMatch(/^Tuesday 10:00\sPM$/);
+      expect(messageTime(at(9, 5, 22, 0), now, "en")).toMatch(/^Mon, Oct 5 at 10:00\sPM$/);
+    });
+
+    it("German", () => {
+      expect(messageTime(at(9, 4, 23, 50), at(9, 5, 0, 10), "de")).toBe("Gestern 23:50");
+    });
+  });
 });
