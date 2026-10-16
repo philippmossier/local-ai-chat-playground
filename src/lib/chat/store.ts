@@ -68,6 +68,12 @@ const mapMessage = (
     messages: c.messages.map((m) => (m.id === messageId ? fn(m) : m)),
   }));
 
+const streamTarget = (state: ChatState, chatId: string): string => {
+  const active = state.chats.find((c) => c.id === state.activeId);
+  const origin = state.chats.find((c) => c.id === chatId);
+  return active && origin && active.updatedAt > origin.updatedAt ? active.id : chatId;
+};
+
 export function chatReducer(state: ChatState, action: ChatAction): ChatState {
   switch (action.type) {
     case "new":
@@ -118,7 +124,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case "token":
       return mapMessage(
         state,
-        state.activeId ?? action.chatId,
+        streamTarget(state, action.chatId),
         action.messageId,
         (m) => ({
           ...m,
@@ -128,7 +134,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case "finish":
       return mapMessage(
         state,
-        state.activeId ?? action.chatId,
+        streamTarget(state, action.chatId),
         action.messageId,
         (m) => ({
           ...m,
