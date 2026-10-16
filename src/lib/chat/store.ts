@@ -161,7 +161,11 @@ export function deserialize(raw: string | null): ChatState {
       ...c,
       updatedAt: typeof c.updatedAt === "number" ? c.updatedAt : c.createdAt,
     }));
-    const activeId = chats[0]?.id ?? null;
+    const stored: unknown = data.activeId;
+    const activeId =
+      typeof stored === "string" && chats.some((c) => c.id === stored)
+        ? stored
+        : (chats[0]?.id ?? null);
     return { chats, activeId };
   } catch {
     return initialState;

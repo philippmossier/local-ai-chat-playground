@@ -131,6 +131,34 @@ describe("persistence", () => {
     expect(s.chats).toHaveLength(1);
     expect(s.activeId).toBe("c1");
   });
+
+  it("reopens the chat that was selected before, not the newest one", () => {
+    let s = started();
+    s = chatReducer(s, { type: "new", id: "c2", now: 5 });
+    s = chatReducer(s, { type: "select", id: "c1" });
+    expect(s.chats[0]!.id).toBe("c2");
+    expect(s.activeId).toBe("c1");
+    const restored = deserialize(serialize(s));
+    expect(restored.activeId).toBe("c1");
+    expect(restored).toEqual(s);
+  });
+
+  it.each([["missing"], [42], [{}]])(
+    "falls back to the first chat when the stored activeId is %j",
+    (activeId) => {
+      let s = started();
+      s = chatReducer(s, { type: "new", id: "c2", now: 5 });
+      const raw = JSON.stringify({ chats: s.chats, activeId });
+      expect(deserialize(raw).activeId).toBe("c2");
+    },
+  );
+
+  it("falls back to the first chat when the stored activeId is null", () => {
+    let s = started();
+    s = chatReducer(s, { type: "new", id: "c2", now: 5 });
+    const raw = JSON.stringify({ chats: s.chats, activeId: null });
+    expect(deserialize(raw).activeId).toBe("c2");
+  });
 });
 
 describe("chats saved before updatedAt existed", () => {
