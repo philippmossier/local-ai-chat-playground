@@ -49,7 +49,7 @@ const TITLE_LENGTH = 42;
 
 export function titleFrom(text: string): string {
   const flat = text.replace(/\s+/g, " ").trim();
-  return flat.length < TITLE_LENGTH ? flat : `${flat.slice(0, TITLE_LENGTH - 1)}…`;
+  return flat.length <= TITLE_LENGTH ? flat : `${flat.slice(0, TITLE_LENGTH - 1)}…`;
 }
 
 const mapChat = (state: ChatState, id: string, fn: (c: Chat) => Chat): ChatState => ({

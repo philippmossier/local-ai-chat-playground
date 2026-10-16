@@ -104,6 +104,26 @@ describe("titleFrom", () => {
     expect(titleFrom(long)).toHaveLength(42);
     expect(titleFrom(long).endsWith("…")).toBe(true);
   });
+
+  it("keeps text of 41 and 42 characters whole", () => {
+    const t41 = "x".repeat(41);
+    const t42 = "x".repeat(42);
+    expect(titleFrom(t41)).toBe(t41);
+    expect(titleFrom(t42)).toBe(t42);
+  });
+
+  it("cuts 43 characters to 41 plus an ellipsis", () => {
+    const t43 = "x".repeat(43);
+    expect(titleFrom(t43)).toBe(`${"x".repeat(41)}…`);
+    expect(titleFrom(t43)).toHaveLength(42);
+  });
+
+  it("keeps a question that collapses to exactly 42 characters, trailing ? included", () => {
+    const raw = `  ${"a".repeat(20)}\n\n   ${"b".repeat(20)}?  `;
+    const expected = `${"a".repeat(20)} ${"b".repeat(20)}?`;
+    expect(expected).toHaveLength(42);
+    expect(titleFrom(raw)).toBe(expected);
+  });
 });
 
 describe("persistence", () => {
